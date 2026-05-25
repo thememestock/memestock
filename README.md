@@ -1,6 +1,6 @@
 # 🤖 Memecoin ETF Automation Keeper Engine
 
-The autonomous orchestration backend for the **$Memecoin Total Market Index**.
+The autonomous orchestration backend for the **$MEME Total Market Index**.
 
 This system operates as an automated keeper daemon on the Solana network. It monitors the dashboard queue, claims accumulated wSOL trading fees from Meteora Dynamic AMMs, swaps them for a randomly selected index asset via the Jupiter Aggregator, and executes pro-rata atomic batch airdrops to qualified holders using an immutable on-chain blockhash as a randomness seed.
 
@@ -26,10 +26,9 @@ This system operates as an automated keeper daemon on the Solana network. It mon
 ## 📁 Repository Structure
 
 ```text
-├── keeper.py          # Core orchestration loop & cron-like dispatch daemon
+├── dispatcher.py          # Core orchestration loop & cron-like dispatch daemon
 ├── airdrop.py         # Modular Engine Core (SPL program layouts, packed multi-drops)
 ├── holder_utils.py    # Snapshot engine compiling proportional holding weights
-├── .env.example       # System configuration environmental baseline template
 └── README.md          # Project documentation
 
 ```
