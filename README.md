@@ -15,10 +15,10 @@ This system operates as an automated keeper daemon on the Solana network. It mon
 
 ```
 
-1. **Fee Accumulation:** Every trade on the Meteora $Memecoin pool charges a 5% Liquidity Provider fee. These fees accumulate as wrapped SOL (`wSOL`) inside the LP position held by the operator.
+1. **Fee Accumulation:** Every trade on the Meteora $MEME pool charges a 5% Liquidity Provider fee. These fees accumulate as wrapped SOL (`wSOL`) inside the LP position held by the operator.
 2. **Provably Fair Selection:** Before each distribution cycle, a future Solana block number is locked in. When that block is mined, its unpredictable blockhash seeds the selection algorithm to pick one of the 50 supported basket assets (e.g., `$PENGU`, `$WIF`, `$BONK`).
 3. **Liquidity Routing:** Upon countdown expiration, the keeper claims the accrued `wSOL` fees, handles gas reserves, and swaps 100% of the active balance into the chosen target coin using Jupiter.
-4. **Packed Atomic Distributions:** The engine pulls an on-chain snapshot of $Memecoin balances via `holder_utils`. Wallets holding $\ge$ 100,000 $Memecoin receive their exact percentage share of the acquired token via packed batch transactions.
+4. **Packed Atomic Distributions:** The engine pulls an on-chain snapshot of $MEME balances via `holder_utils`. Wallets holding $\ge$ 100,000 $MEME receive their exact percentage share of the acquired token via packed batch transactions.
 5. **State Synchronization:** The execution metrics (USD Value, SOL spent, recipients count) are committed to the web app dashboard via an authenticated REST ledger sync.
 
 ---
