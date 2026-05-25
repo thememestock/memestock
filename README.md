@@ -1,7 +1,3 @@
-Here is a complete, production-ready `README.md` for your GitHub repository. It clearly translates your keeper daemon logic and front-end layout details into standard open-source documentation.
-
----
-
 # 🤖 Memecoin ETF Automation Keeper Engine
 
 The autonomous orchestration backend for the **$Memecoin Total Market Index**.
