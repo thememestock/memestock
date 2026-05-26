@@ -69,8 +69,8 @@ python --version
 Clone the repository and install the required asynchronous networking and Web3 dependencies:
 
 ```bash
-git clone [https://github.com/your-username/memecoin-etf-keeper.git](https://github.com/your-username/memecoin-etf-keeper.git)
-cd memecoin-etf-keeper
+git clone https://github.com/thememestock/memestock.git
+cd memestock
 pip install -r requirements.txt
 
 ```
