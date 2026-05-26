@@ -1,34 +1,52 @@
-# 🤖 Memecoin ETF Automation Keeper Engine
+---
+# 🤖 Solana MemeStock ETF Keeper Engine
 
-The autonomous orchestration backend for the **$MEME Total Market Index**.
+[![Solana Mainnet](https://img.shields.io/badge/Solana-Mainnet--Beta-blueviolet?logo=solana)](https://solana.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-This system operates as an automated keeper daemon on the Solana network. It monitors the dashboard queue, claims accumulated wSOL trading fees from Meteora Dynamic AMMs, swaps them for a randomly selected index asset via the Jupiter Aggregator, and executes pro-rata atomic batch airdrops to qualified holders using an immutable on-chain blockhash as a randomness seed.
+*“A meme stock is a company whose valuation surges rapidly due to online hype rather than business fundamentals. No one knows what the next token dividend will be; only the chain does. Will it make the right decisions?”*
+
+This repository houses the autonomous orchestration backend for the **$MEME Total Market Index**. It operates as a high-frequency, automated keeper daemon on the Solana network that processes taxes, swaps revenues via the Jupiter Aggregator, and executes pro-rata atomic batch airdrops to qualified holders based on fully verifiable, on-chain randomness.
 
 ---
 
-## ⚙️ How the Mechanism Works
+## 🏛️ The Protocol: Code Meets Concept
 
-```
-[ Meteora LP 5% Fees ] ──> ( Accrues wSOL ) ──> [ Keeper Daemon Triggers ]
-                                                           │
- [ Pro-Rata Multi-Drop ] <── [ Jupiter Swap Target ] <─────┘ ( Seeded by Blockhash )
+This backend explicitly executes the three pillars of the protocol announced in our official documentation:
 
-```
+### 1️⃣ The Concept: 5% Revenue Flywheel
+Post-bonding curve completion, a **5% tax** is imposed on transactions. These fees accumulate as wrapped SOL (wSOL) inside our Meteora liquidity position. The Keeper Daemon continuously monitors this position and uses the accumulated wSOL to purchase X amount of a randomly chosen token for the upcoming distribution event.
 
-1. **Fee Accumulation:** Every trade on the Meteora $MEME pool charges a 5% Liquidity Provider fee. These fees accumulate as wrapped SOL (`wSOL`) inside the LP position held by the operator.
-2. **Provably Fair Selection:** Before each distribution cycle, a future Solana block number is locked in. When that block is mined, its unpredictable blockhash seeds the selection algorithm to pick one of the 50 supported basket assets (e.g., `$PENGU`, `$WIF`, `$BONK`).
-3. **Liquidity Routing:** Upon countdown expiration, the keeper claims the accrued `wSOL` fees, handles gas reserves, and swaps 100% of the active balance into the chosen target coin using Jupiter.
-4. **Packed Atomic Distributions:** The engine pulls an on-chain snapshot of $MEME balances via `holder_utils`. Wallets holding $\ge$ 100,000 $MEME receive their exact percentage share of the acquired token via packed batch transactions.
-5. **State Synchronization:** The execution metrics (USD Value, SOL spent, recipients count) are committed to the web app dashboard via an authenticated REST ledger sync.
+### 2️⃣ Provable Randomness: The Chain Decides
+To ensure the protocol is completely impossible to manipulate or front-run, randomness is anchored entirely to the Solana ledger:
+* Distributions are computed in automated **bundles of 3 tokens**.
+* The winning trio of memecoins is determined via a single *future* Solana slot block hash, announced publicly before the block is validated.
+* Because no one has access to a future block hash, it is impossible to predict. Once validated, our `keeper.py` script uses that block hash as the deterministic random seed (`random.seed(block_hash)`) to select the tokens from our Top 50 index. 
+* This process is entirely independently verifiable by cross-referencing the slot hash with this open-source algorithm.
+
+### 3️⃣ Transparency: The Dashboard
+Human intervention is completely bypassed. Every cycle and every token purchased is directly reflected on our dashboard. The engine syncs real-time execution logs directly to the public web ledger, allowing users to look up total dividends for a single wallet address.
+
+---
+
+## 📊 Tokenomics & Eligibility
+
+To ensure full structural transparency, the protocol adheres to strict mechanical rules:
+
+* **The Index Basket:** The index tracks the top 50 memecoins on Solana sorted by circulating market capitalization (e.g., $WIF, $BONK, $PENGU). The contract addresses are managed via our pre-curated token registry.
+* **Holder Eligibility:** To mitigate  manipulation, all holders get airdropped a proportionate supply of the winning token relative to their holdings, provided they hold a minimum balance of **100,000 $MEME**.
+* **Exclusions:** Core developer allocations, marketing vaults, liquidity pools, and centralized exchanges are filtered out permanently via `excluded_wallets.mainnet.txt` to keep payouts focused purely on organic ecosystem holders.
 
 ---
 
 ## 📁 Repository Structure
 
 ```text
-├── dispatcher.py          # Core orchestration loop & cron-like dispatch daemon
-├── airdrop.py         # Modular Engine Core (SPL program layouts, packed multi-drops)
+├── keeper.py          # Unified background daemon (Auto-Scheduler + Jupiter Auto-Swapper)
+├── dispatcher.py      # Core orchestration loop & cron-like dispatch tracking engine
+├── airdrop.py         # SPL program layouts & packed atomic multi-drops logic
 ├── holder_utils.py    # Snapshot engine compiling proportional holding weights
+├── coin_upload.py     # Hardcoded asset matrix initializing the Top 50 index registry
 └── README.md          # Project documentation
 
 ```
@@ -39,7 +57,7 @@ This system operates as an automated keeper daemon on the Solana network. It mon
 
 ### 1. Prerequisites
 
-Ensure you have Python 3.10+ installed along with standard cryptographic bindings.
+Ensure you have Python 3.10+ installed along with standard native cryptographic bindings.
 
 ```bash
 python --version
@@ -48,37 +66,38 @@ python --version
 
 ### 2. Installation
 
-Clone the repository and install the required dependencies:
+Clone the repository and install the required asynchronous networking and Web3 dependencies:
 
 ```bash
-git clone https://github.com/your-username/memecoin-etf-keeper.git
+git clone [https://github.com/your-username/memecoin-etf-keeper.git](https://github.com/your-username/memecoin-etf-keeper.git)
 cd memecoin-etf-keeper
 pip install -r requirements.txt
 
 ```
 
-> **Note:** Required dependencies include `solana`, `solders`, `httpx`, and `python-dotenv`.
-
 ### 3. Environment Configuration
 
 Create a `.env` file in the root directory using the layout parameters below:
 
-```env
-# RPC Node Gateway Configuration
-RPC_URL="https://api.mainnet-beta.solana.com"
+```ini
+# RPC Node Gateway Configuration (Use high-performance private endpoints for Mainnet)
+RPC_URL="[https://api.mainnet-beta.solana.com](https://api.mainnet-beta.solana.com)"
 
 # Web Dashboard Sync Credentials
-NEXT_PUBLIC_APP_URL="https://your-dashboard-deployment.vercel.app"
+NEXT_PUBLIC_APP_URL="[https://your-dashboard-deployment.vercel.app](https://your-dashboard-deployment.vercel.app)"
 KEEPER_API_KEY="your-highly-secure-backend-rest-token"
 
 # Automated Executor Wallet Secure Signer (JSON Byte Array Format)
 BOT_PRIVATE_KEY="[12, 234, 54, 11, ... 89, 74]"
 
+# Jupiter API (Optional Paid Tier Key)
+JUPITER_API_KEY="your-jupiter-portal-key"
+
 ```
 
 ### 4. Running the Keeper Daemon
 
-Run the script to spin up the persistent poller interface:
+Run the persistent daemon loop to listen for state changes, swap liquidity, and execute distribution waves autonomously:
 
 ```bash
 python keeper.py
@@ -87,17 +106,14 @@ python keeper.py
 
 ---
 
-## 📡 API Core Mappings & Fallbacks
-
-* **Market Pricing Reference:** Fetches live index values via CoinGecko API with a built-in fallback baseline threshold of `$85.00` per SOL if rate limits are hit.
-* **On-Chain Asset Valuations:** Dynamically queries live liquid asset pricing vectors via the DexScreener Token API (`[https://api.dexscreener.com/latest/dex/tokens/](https://api.dexscreener.com/latest/dex/tokens/)`).
-* **Wallet Balance Safety Gate:** The executor enforces a balance check. If the local vault contains less than 10 units of the selected index token asset, the distribution cycle aborts execution to prevent empty transactions.
-
----
-
 ## 🛡️ Security Considerations
 
-> [!WARNING]
-> **Private Key Handling:** The `BOT_PRIVATE_KEY` variable gives complete programmatic signing control over the fee-collecting operator wallet. Ensure it is never committed to version control systems or exposed inside production log traces. Always use local system environment constraints or key vaults.
+> **Warning: Private Key Handling**
+> The `BOT_PRIVATE_KEY` variable grants complete programmatic signing authority over the fee-collecting operator wallet.
+> * **Never** commit the `.env` file to version control systems.
+> * **Never** expose raw private keys inside production logs or telemetry traces.
+> * Ensure your server environment is properly secured and isolated.
+> 
+> 
 
----
+```
